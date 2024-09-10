@@ -1,0 +1,17 @@
+POST /wordpress/wp-login.php HTTP/1.1
+Host: 10.10.110.100:65000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Referer: http://10.10.110.100:65000/wordpress/wp-login.php?redirect_to=http%3A%2F%2F10.10.110.100%3A65000%2Fwordpress%2Fwp-admin%2F&reauth=1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 122
+Origin: http://10.10.110.100:65000
+DNT: 1
+Connection: close
+Cookie: wordpress_test_cookie=WP%20Cookie%20check
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+log=james&pwd="FUZZ"&wp-submit=Log+In&redirect_to=http%3A%2F%2F10.10.110.100%3A65000%2Fwordpress%2Fwp-admin%2F&testcookie=1
